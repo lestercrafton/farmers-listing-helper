@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Farmers Listing Helper</title>
+<meta name="theme-color" content="#2f4a3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Listings">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232f4a3a'/><text x='50' y='68' font-size='56' text-anchor='middle' fill='%23f6efe2' font-family='Georgia'>F</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7; --card:#fffdf8; --ink:#2a2723; --muted:#6f675c; --line:#e3d9c6;
+  --brand:#2f4a3a; --brand-ink:#f6efe2; --accent:#b5652b; --ok:#2e7d4f; --err:#a3332a;
+  --field:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1a17; --card:#25231f; --ink:#f1ebdf; --muted:#b1a795; --line:#3a362f;
+    --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f; --field:#1f1d1a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1a17; --card:#25231f; --ink:#f1ebdf; --muted:#b1a795; --line:#3a362f;
+  --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f; --field:#1f1d1a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+header{background:var(--brand);color:var(--brand-ink);padding:18px 16px 16px;padding-top:max(18px,env(safe-area-inset-top))}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:22px;margin:0;line-height:1.15}
+header p{margin:2px 0 0;font-size:13px;opacity:.85}
+.wrap{max-width:640px;margin:0 auto}
+main{padding:16px;padding-bottom:80px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+label{display:block;font-size:14px;font-weight:500;margin:12px 0 6px}
+label:first-child{margin-top:0}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--field);
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--brand)}
+textarea{resize:vertical;min-height:44px}
+.row{display:flex;gap:10px}
+.row>*{flex:1;min-width:0}
+.money{position:relative}
+.money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.money input{padding-left:24px}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid transparent;padding:12px 14px;cursor:pointer;touch-action:manipulation}
+.btn-primary{background:var(--brand);color:var(--brand-ink);width:100%;font-size:17px;padding:15px}
+.btn-primary:disabled{opacity:.55}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-small{padding:7px 11px;font-size:13px}
+.icon-btn{background:transparent;color:inherit;border:1px solid rgba(255,255,255,.35);padding:8px 10px;font-size:13px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:22px 12px;text-align:center;cursor:pointer;background:var(--field)}
+.drop strong{display:block;font-size:17px}
+.drop small{color:var(--muted)}
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.thumbs:empty{display:none}
+.thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:4px;right:4px;width:26px;height:26px;padding:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:1}
+.seg{display:flex;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;background:transparent;color:var(--muted);padding:9px 6px;font-size:14px;border-radius:8px}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.out{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--field)}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.out-head span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.out-body{white-space:pre-wrap;word-wrap:break-word;font-size:16px}
+.out-body.title{font-weight:600;letter-spacing:.01em}
+.copy.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.notes{font-size:13px;color:var(--accent);margin-top:10px}
+.compare-list{display:grid;gap:8px;margin-top:10px}
+.city{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
+.city:last-child{border-bottom:0}
+.city b{font-weight:600}
+.city small{display:block;color:var(--muted);font-size:12px}
+.status{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;margin-top:12px}
+.spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s 0.8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.err{color:var(--err);font-size:14px;margin-top:10px}
+.hidden{display:none!important}
+details summary{cursor:pointer;font-weight:500}
+.hist{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.hist:last-child{border-bottom:0}
+.hist img{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none}
+.hist div{min-width:0}
+.hist b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist small{color:var(--muted);font-size:12px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1>Farmers Listing Helper</h1>
+      <p>Snap a photo, get a listing, copy &amp; paste.</p>
+    </div>
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙︎ Setup</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card hidden" id="setupCard">
+    <h2>One-time setup</h2>
+    <label for="apiKey">Anthropic API key</label>
+    <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+    <p class="hint">Saved only on this phone. It is sent straight to Anthropic and nowhere else.</p>
+    <div class="row" style="margin-top:12px">
+      <button class="btn-primary" id="saveKey" style="font-size:15px;padding:12px">Save</button>
+      <button class="btn-ghost" id="clearKey">Remove key</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>1 · Photos</h2>
+    <div class="drop" id="drop" role="button" tabindex="0">
+      <strong>📷 Take or choose photos</strong>
+      <small>Up to 4. Tags, labels &amp; the back side help.</small>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple class="hidden">
+    <div class="thumbs" id="thumbs"></div>
+
+    <label for="notes">Anything I should know? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+    <textarea id="notes" rows="2" placeholder="e.g. brand Curds &amp; Whey, sizes S–XL, 24&quot; tall, solid mango wood"></textarea>
+
+    <div class="row">
+      <div>
+        <label for="price">Price</label>
+        <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" id="price" placeholder="0.00"></div>
+      </div>
+      <div>
+        <label for="compareAt">Compare @</label>
+        <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" id="compareAt" placeholder="optional"></div>
+      </div>
+    </div>
+
+    <label>Writing style</label>
+    <div class="seg" id="styleSeg">
+      <button type="button" data-style="classic" aria-pressed="false">Like my site</button>
+      <button type="button" data-style="better" aria-pressed="true">A little better</button>
+      <button type="button" data-style="warm" aria-pressed="false">Warm &amp; chatty</button>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="btn-primary" id="go">✨ Write my listing</button>
+    </div>
+    <div class="status hidden" id="status"><div class="spin"></div><span id="statusText">Looking at your photo…</span></div>
+    <div class="err hidden" id="err"></div>
+  </section>
+
+  <section class="card hidden" id="result">
+    <h2>2 · Your listing</h2>
+
+    <div class="out">
+      <div class="out-head"><span>Item name</span><button class="btn-ghost btn-small copy" data-copy="title">Copy</button></div>
+      <div class="out-body title" id="outTitle"></div>
+    </div>
+
+    <div class="out">
+      <div class="out-head"><span>Description</span><button class="btn-ghost btn-small copy" data-copy="description">Copy</button></div>
+      <div class="out-body" id="outDesc"></div>
+    </div>
+
+    <div class="out" id="priceBox">
+      <div class="out-head"><span>Price</span><button class="btn-ghost btn-small copy" data-copy="price">Copy</button></div>
+      <div class="out-body" id="outPrice"></div>
+    </div>
+
+    <div class="out">
+      <div class="out-head"><span>Facebook / Instagram post</span><button class="btn-ghost btn-small copy" data-copy="social">Copy</button></div>
+      <div class="out-body" id="outSocial"></div>
+    </div>
+
+    <div class="notes hidden" id="outNotes"></div>
+
+    <div class="actions">
+      <button class="btn-ghost" id="refresh">🔄 New version</button>
+      <button class="btn-ghost copy" data-copy="all">📋 Copy all</button>
+    </div>
+  </section>
+
+  <section class="card hidden" id="compareCard">
+    <h2>3 · Compare @ — what it runs elsewhere</h2>
+    <p class="hint" style="margin-top:0">Looks up similar items sold in Memphis, Nashville &amp; Atlanta stores and online. Takes about a minute.</p>
+    <button class="btn-ghost" id="compareBtn" style="width:100%;margin-top:10px">🔎 Check prices in Memphis · Nashville · Atlanta</button>
+    <div class="status hidden" id="cStatus"><div class="spin"></div><span>Shopping around…</span></div>
+    <div class="err hidden" id="cErr"></div>
+    <div id="cOut" class="hidden">
+      <div class="compare-list" id="cList"></div>
+      <div class="out" style="margin-top:12px">
+        <div class="out-head"><span>Suggested compare @ price</span><button class="btn-ghost btn-small" id="useCompare">Use it</button></div>
+        <div class="out-body" id="cSuggest"></div>
+      </div>
+      <p class="hint" id="cNote"></p>
+    </div>
+  </section>
+
+  <section class="card" id="histCard">
+    <details>
+      <summary>Recent listings</summary>
+      <div id="hist" style="margin-top:8px"></div>
+    </details>
+  </section>
+</main>
+<footer>Made for Farmers Hardware &amp; Home Furnishings · Somerville, TN</footer>
+
+<script type="module">
+import Anthropic from "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk/+esm";
+
+const MODEL = "claude-opus-5";
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+
+// ---------- state ----------
+let photos = [];          // [{dataUrl, b64, mediaType}]
+let style = store.get("style", "better");
+let current = null;       // latest listing result
+let previousVersions = []; // descriptions already shown for this item (for refresh)
+
+// ---------- setup ----------
+const hasKey = () => !!store.get("apiKey");
+function showSetup(show) { $("setupCard").classList.toggle("hidden", !show); }
+showSetup(!hasKey());
+$("settingsBtn").onclick = () => showSetup($("setupCard").classList.contains("hidden"));
+$("saveKey").onclick = () => {
+  const k = $("apiKey").value.trim();
+  if (!k) return;
+  store.set("apiKey", k); $("apiKey").value = ""; showSetup(false);
+};
+$("clearKey").onclick = () => { store.del("apiKey"); $("apiKey").value = ""; };
+const client = () => new Anthropic({ apiKey: store.get("apiKey"), dangerouslyAllowBrowser: true });
+
+// ---------- style toggle ----------
+document.querySelectorAll("#styleSeg button").forEach((b) => {
+  b.setAttribute("aria-pressed", b.dataset.style === style);
+  b.onclick = () => {
+    style = b.dataset.style; store.set("style", style);
+    document.querySelectorAll("#styleSeg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  };
+});
+
+// ---------- photos ----------
+$("drop").onclick = () => $("file").click();
+$("drop").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") $("file").click(); };
+$("file").onchange = async (e) => {
+  const files = [...e.target.files].slice(0, 4 - photos.length);
+  for (const f of files) photos.push(await shrink(f));
+  e.target.value = "";
+  renderThumbs();
+};
+function renderThumbs() {
+  $("thumbs").innerHTML = "";
+  photos.forEach((p, i) => {
+    const d = document.createElement("div"); d.className = "thumb";
+    d.innerHTML = `<img alt=""><button aria-label="Remove">×</button>`;
+    d.querySelector("img").src = p.dataUrl;
+    d.querySelector("button").onclick = () => { photos.splice(i, 1); renderThumbs(); };
+    $("thumbs").appendChild(d);
+  });
+  $("drop").classList.toggle("hidden", photos.length >= 4);
+}
+// Phone photos are huge; resize to ~1400px JPEG before sending.
+function shrink(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1400, s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      const dataUrl = c.toDataURL("image/jpeg", 0.85);
+      URL.revokeObjectURL(img.src);
+      resolve({ dataUrl, b64: dataUrl.split(",")[1], mediaType: "image/jpeg" });
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// ---------- the prompt ----------
+const SYSTEM = `You write product listings for Farmers Hardware and Home Furnishings, a family-owned store on the town square in Somerville, Tennessee (in the family since 1954). They sell home furnishings and custom-order furniture, home decor, seasonal and holiday decor, gifts, gourmet pantry items, a women's clothing boutique, and hardware. Listings go on their Square Online store.
+
+ITEM NAME — match the store's house style exactly: ALL CAPS, short, color first for clothing, store abbreviations where natural. Real examples from the site:
+- OLIVE/BLK POLKA DOT 3/4 SLV BTN FRNT TOP
+- RED HI-RISE VELVETEEN BOOTCUT PINTUCK PANTS
+- HAND-WOVEN SEAGRASS BASKET W/LID - MED
+- BLU/WHT PORCELAIN JAR W/BIRDS & FLOWERS
+- GRAND POD BERRY SPRAY ORANGE 24"
+- MANGO WOOD SERVING BOARD W/ 3 PEDESTALS
+- ROASTED PINEAPPLE HABANERO JELLY
+Common abbreviations: W/ (with), BTN (button), SLV (sleeve), L/S and S/SLV, FRNT (front), EMBRD'D (embroidered), BLK, BLU, WHT, GRN, HI-RISE, MED. Put sizes in inches with " when known. Keep it under ~50 characters. Spell words correctly.
+
+DESCRIPTION — examples of the store's current descriptions:
+- "This hunter green 3/4 sleeve top features a scalloped design that adds a touch of elegance to its versatile style. Crafted for a comfortable fit, it is suitable for both casual and professional settings."
+- "Square pillow featuring a green and rust embroidered leaf motif with intricate beaded accents for added texture and detail. Ideal for enhancing seasonal or nature-inspired décor."
+- "This Roasted Pineapple Habanero Jelly combines a sweet and spicy flavor profile, making it a versatile condiment for a variety of dishes. Handcrafted with quality ingredients, it's ideal for glazing, dipping, or pairing with cheese and crackers."
+
+Rules for every description:
+- Describe only what you can actually see or what the owner told you. Never invent materials, brands, dimensions, care instructions, or features (no "energy-efficient", "durable materials", "easy assembly" unless evident). If something important is unclear (size, material), leave it out and mention it in "check_before_posting".
+- Plain text, no markdown, no emojis, no hashtags, no price in the description.
+- Write in American English for customers in West Tennessee and the Mid-South.
+
+STYLE MODES:
+- "classic": match the examples above closely. 2 sentences, 30–50 words, polished and neutral.
+- "better": same polished voice but noticeably more useful. 3–4 sentences, 50–90 words. Lead with the most distinctive visible detail (exact color, pattern, texture, shape, finish), then how it's worn/used/styled, then one concrete pairing, room, occasion, or gift idea. Avoid filler words: versatile, elevate, timeless, perfect addition, touch of elegance, any occasion. Every sentence should tell the shopper something specific.
+- "warm": friendly small-town boutique voice, like the owner talking to a regular customer. 3–4 sentences, 50–90 words, can use "you" and a light Southern warmth, still no emojis and nothing made up.
+
+SOCIAL POST: 1–3 short, friendly sentences for Facebook/Instagram announcing the item is in store and online, may use 1–2 emojis, end with "Shop in store on the square in Somerville or online!" If a price is given, include it (and the compare-at price as "Compare at $X" if given).
+
+If there are several photos, they show the same item. If the photos show several different products, write the listing for the main or first one and say so in check_before_posting.`;
+
+const LISTING_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["title", "description", "social_post", "category", "search_phrase", "check_before_posting"],
+  properties: {
+    title: { type: "string", description: "Item name in house style" },
+    description: { type: "string" },
+    social_post: { type: "string" },
+    category: { type: "string", description: "e.g. Boutique - Tops, Home Decor, Holiday, Pantry, Furniture, Hardware" },
+    search_phrase: { type: "string", description: "Short generic shopping search for this item type, e.g. 'hand-woven seagrass basket with lid medium'" },
+    check_before_posting: { type: "string", description: "Anything the owner should confirm (size, material, brand). Empty string if nothing." },
+  },
+};
+
+function friendlyError(e) {
+  const s = e?.status;
+  if (s === 401) return "The API key isn't working. Tap ⚙︎ Setup and re-enter it.";
+  if (s === 429) return "Too many requests at once — wait a few seconds and try again.";
+  if (s >= 500 || s === 529) return "The AI service is busy right now. Try again in a minute.";
+  if (e instanceof TypeError || /fetch|network/i.test(e?.message || "")) return "Couldn't reach the internet. Check your connection and try again.";
+  return "Something went wrong: " + (e?.message || e);
+}
+
+async function writeListing() {
+  $("err").classList.add("hidden");
+  if (!hasKey()) { showSetup(true); $("err").textContent = "Add the API key first (one time only)."; $("err").classList.remove("hidden"); return; }
+  if (!photos.length) { $("err").textContent = "Add at least one photo."; $("err").classList.remove("hidden"); return; }
+
+  const price = $("price").value, compareAt = $("compareAt").value;
+  let ask = `Style mode: ${style}.`;
+  const notes = $("notes").value.trim();
+  if (notes) ask += `\nOwner's notes about this item (trust these): ${notes}`;
+  if (price) ask += `\nPrice: $${Number(price).toFixed(2)}`;
+  if (compareAt) ask += `\nCompare-at price: $${Number(compareAt).toFixed(2)}`;
+  if (previousVersions.length) ask += `\nThe owner asked for a fresh version. Write a noticeably different description and social post (different opening, different angle) from these earlier ones:\n- ${previousVersions.join("\n- ")}`;
+
+  const content = [
+    ...photos.map((p) => ({ type: "image", source: { type: "base64", media_type: p.mediaType, data: p.b64 } })),
+    { type: "text", text: ask },
+  ];
+
+  setBusy(true, previousVersions.length ? "Writing a new version…" : "Looking at your photo…");
+  try {
+    const res = await client().beta.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      system: SYSTEM,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "medium", format: { type: "json_schema", schema: LISTING_SCHEMA } },
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      messages: [{ role: "user", content }],
+    });
+    if (res.stop_reason === "refusal") throw new Error("The AI declined to describe this photo. Try a different picture.");
+    const text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+    const data = JSON.parse(text);
+    current = { ...data, price, compareAt, thumb: await tinyThumb(photos[0].dataUrl), at: Date.now() };
+    previousVersions.push(data.description);
+    renderResult();
+    saveHistory(current);
+  } catch (e) {
+    $("err").textContent = friendlyError(e);
+    $("err").classList.remove("hidden");
+  } finally {
+    setBusy(false);
+  }
+}
+
+function setBusy(on, msg) {
+  $("go").disabled = on; $("refresh").disabled = on;
+  $("status").classList.toggle("hidden", !on);
+  if (msg) $("statusText").textContent = msg;
+}
+
+const money = (v) => (v ? "$" + Number(v).toFixed(2) : "");
+function priceLine(r) {
+  if (!r.price && !r.compareAt) return "";
+  return [r.price && money(r.price), r.compareAt && `Compare @ ${money(r.compareAt)}`].filter(Boolean).join("   ·   ");
+}
+
+function renderResult() {
+  const r = current;
+  $("outTitle").textContent = r.title;
+  $("outDesc").textContent = r.description;
+  $("outSocial").textContent = r.social_post;
+  $("outPrice").textContent = priceLine(r);
+  $("priceBox").classList.toggle("hidden", !priceLine(r));
+  $("outNotes").textContent = r.check_before_posting ? "⚠︎ Double-check: " + r.check_before_posting : "";
+  $("outNotes").classList.toggle("hidden", !r.check_before_posting);
+  $("result").classList.remove("hidden");
+  $("compareCard").classList.remove("hidden");
+  $("cOut").classList.add("hidden"); $("cErr").classList.add("hidden");
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ---------- copy ----------
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest(".copy"); if (!b || !current) return;
+  const r = current;
+  const map = {
+    title: r.title, description: r.description, social: r.social_post, price: r.price ? Number(r.price).toFixed(2) : priceLine(r),
+    all: [r.title, "", r.description, priceLine(r) && "\n" + priceLine(r)].filter((x) => x !== false && x !== undefined).join("\n").trim(),
+  };
+  const txt = map[b.dataset.copy] || "";
+  try { await navigator.clipboard.writeText(txt); }
+  catch { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+  const old = b.textContent; b.textContent = "✓ Copied"; b.classList.add("done");
+  setTimeout(() => { b.textContent = old; b.classList.remove("done"); }, 1400);
+});
+
+$("go").onclick = () => { previousVersions = []; writeListing(); };
+$("refresh").onclick = () => writeListing();
+
+// ---------- compare @ prices ----------
+const COMPARE_SCHEMA_HINT = `Respond with ONLY a JSON object, no other text, in this shape:
+{"cities":[{"city":"Memphis","low":0,"high":0,"where":"short note on the kinds of stores / sources"},{"city":"Nashville",...},{"city":"Atlanta",...}],
+ "online_typical": 0, "suggested_compare_at": 0, "confidence": "low|medium|high", "note": "one sentence explaining the suggestion"}`;
+
+$("compareBtn").onclick = async () => {
+  if (!current) return;
+  $("cErr").classList.add("hidden"); $("cOut").classList.add("hidden");
+  $("compareBtn").disabled = true; $("cStatus").classList.remove("hidden");
+  try {
+    const prompt = `A small-town store in Somerville, TN sells this item: "${current.title}" — ${current.description}
+Generic search phrase: ${current.search_phrase}.${current.price ? ` Their price: $${Number(current.price).toFixed(2)}.` : ""}
+Search the web for what the same or very similar items sell for at retailers in or serving Memphis TN, Nashville TN and Atlanta GA (local boutiques, furniture/home stores, department stores, and the big-box/online prices shoppers there would see). Give a realistic price range per city and a suggested "compare at" price the store could honestly show. Be conservative; if data is thin, say confidence is low.
+${COMPARE_SCHEMA_HINT}`;
+    const res = await client().beta.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "low" },
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
+      messages: [{ role: "user", content: [
+        { type: "image", source: { type: "base64", media_type: photos[0]?.mediaType || "image/jpeg", data: photos[0]?.b64 || "" } },
+        { type: "text", text: prompt },
+      ].filter((b) => b.type !== "image" || b.source.data) }],
+    });
+    if (res.stop_reason === "refusal") throw new Error("Couldn't look up prices for this one.");
+    const text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error("Couldn't find good price comparisons. Try again.");
+    const d = JSON.parse(m[0]);
+    $("cList").innerHTML = "";
+    for (const c of d.cities || []) {
+      const row = document.createElement("div"); row.className = "city";
+      const range = c.low && c.high ? (c.low === c.high ? money(c.low) : `${money(c.low)} – ${money(c.high)}`) : "—";
+      row.innerHTML = `<div><b></b><small></small></div><b></b>`;
+      row.children[0].children[0].textContent = c.city;
+      row.children[0].children[1].textContent = c.where || "";
+      row.children[1].textContent = range;
+      $("cList").appendChild(row);
+    }
+    if (d.online_typical) {
+      const row = document.createElement("div"); row.className = "city";
+      row.innerHTML = `<div><b>Online (typical)</b></div><b></b>`;
+      row.children[1].textContent = money(d.online_typical);
+      $("cList").appendChild(row);
+    }
+    $("cSuggest").textContent = d.suggested_compare_at ? money(d.suggested_compare_at) : "Not enough data";
+    $("useCompare").classList.toggle("hidden", !d.suggested_compare_at);
+    $("useCompare").onclick = () => {
+      $("compareAt").value = Number(d.suggested_compare_at).toFixed(2);
+      current.compareAt = $("compareAt").value;
+      $("outPrice").textContent = priceLine(current);
+      $("priceBox").classList.remove("hidden");
+    };
+    $("cNote").textContent = [d.note, d.confidence && `Confidence: ${d.confidence}.`].filter(Boolean).join(" ");
+    $("cOut").classList.remove("hidden");
+  } catch (e) {
+    $("cErr").textContent = e?.status ? friendlyError(e) : (e?.message || friendlyError(e));
+    $("cErr").classList.remove("hidden");
+  } finally {
+    $("compareBtn").disabled = false; $("cStatus").classList.add("hidden");
+  }
+};
+
+// ---------- history (on this phone only) ----------
+function tinyThumb(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas"); c.width = c.height = 96;
+      const s = Math.min(img.width, img.height);
+      c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 96, 96);
+      resolve(c.toDataURL("image/jpeg", 0.7));
+    };
+    img.src = dataUrl;
+  });
+}
+function saveHistory(item) {
+  const h = store.get("history", []);
+  h.unshift(item); store.set("history", h.slice(0, 25)); renderHistory();
+}
+function renderHistory() {
+  const h = store.get("history", []);
+  $("histCard").classList.toggle("hidden", !h.length);
+  $("hist").innerHTML = "";
+  h.forEach((it) => {
+    const row = document.createElement("div"); row.className = "hist";
+    row.innerHTML = `<img alt=""><div><b></b><small></small></div>`;
+    row.querySelector("img").src = it.thumb;
+    row.querySelector("b").textContent = it.title;
+    row.querySelector("small").textContent = new Date(it.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    row.onclick = () => { current = it; renderResult(); $("compareCard").classList.add("hidden"); };
+    $("hist").appendChild(row);
+  });
+}
+renderHistory();
+</script>
+</body>
+</html>

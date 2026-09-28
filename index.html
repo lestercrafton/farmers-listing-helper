@@ -243,7 +243,7 @@ const client = () => new Anthropic({ apiKey: store.get("apiKey"), dangerouslyAll
 // Ask with server-side refusal fallbacks; if the API ever rejects that option, retry plainly.
 async function ask(params) {
   try {
-    return await ask({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+    return await client().beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
   } catch (e) {
     if (e?.status === 400 && /fallback|beta/i.test(e?.message || "")) return client().messages.create(params);
     throw e;

@@ -240,6 +240,15 @@ $("saveKey").onclick = () => {
 };
 $("clearKey").onclick = () => { store.del("apiKey"); $("apiKey").value = ""; };
 const client = () => new Anthropic({ apiKey: store.get("apiKey"), dangerouslyAllowBrowser: true });
+// Ask with server-side refusal fallbacks; if the API ever rejects that option, retry plainly.
+async function ask(params) {
+  try {
+    return await ask({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+  } catch (e) {
+    if (e?.status === 400 && /fallback|beta/i.test(e?.message || "")) return client().messages.create(params);
+    throw e;
+  }
+}
 
 // ---------- style toggle ----------
 document.querySelectorAll("#styleSeg button").forEach((b) => {
@@ -363,14 +372,12 @@ async function writeListing() {
 
   setBusy(true, previousVersions.length ? "Writing a new version…" : "Looking at your photo…");
   try {
-    const res = await client().beta.messages.create({
+    const res = await ask({
       model: MODEL,
       max_tokens: 16000,
       system: SYSTEM,
       thinking: { type: "adaptive" },
       output_config: { effort: "medium", format: { type: "json_schema", schema: LISTING_SCHEMA } },
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
       messages: [{ role: "user", content }],
     });
     if (res.stop_reason === "refusal") throw new Error("The AI declined to describe this photo. Try a different picture.");
@@ -447,13 +454,11 @@ $("compareBtn").onclick = async () => {
 Generic search phrase: ${current.search_phrase}.${current.price ? ` Their price: $${Number(current.price).toFixed(2)}.` : ""}
 Search the web for what the same or very similar items sell for at retailers in or serving Memphis TN, Nashville TN and Atlanta GA (local boutiques, furniture/home stores, department stores, and the big-box/online prices shoppers there would see). Give a realistic price range per city and a suggested "compare at" price the store could honestly show. Be conservative; if data is thin, say confidence is low.
 ${COMPARE_SCHEMA_HINT}`;
-    const res = await client().beta.messages.create({
+    const res = await ask({
       model: MODEL,
       max_tokens: 16000,
       thinking: { type: "adaptive" },
       output_config: { effort: "low" },
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
       messages: [{ role: "user", content: [
         { type: "image", source: { type: "base64", media_type: photos[0]?.mediaType || "image/jpeg", data: photos[0]?.b64 || "" } },

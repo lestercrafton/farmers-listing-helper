@@ -241,7 +241,7 @@ $("saveKey").onclick = () => {
 $("clearKey").onclick = () => { store.del("apiKey"); $("apiKey").value = ""; };
 const client = () => new Anthropic({ apiKey: store.get("apiKey"), dangerouslyAllowBrowser: true });
 // Ask with server-side refusal fallbacks; if the API ever rejects that option, retry plainly.
-async function ask(params) {
+async function askClaude(params) {
   try {
     return await client().beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
   } catch (e) {
@@ -372,7 +372,7 @@ async function writeListing() {
 
   setBusy(true, previousVersions.length ? "Writing a new version…" : "Looking at your photo…");
   try {
-    const res = await ask({
+    const res = await askClaude({
       model: MODEL,
       max_tokens: 16000,
       system: SYSTEM,
@@ -454,7 +454,7 @@ $("compareBtn").onclick = async () => {
 Generic search phrase: ${current.search_phrase}.${current.price ? ` Their price: $${Number(current.price).toFixed(2)}.` : ""}
 Search the web for what the same or very similar items sell for at retailers in or serving Memphis TN, Nashville TN and Atlanta GA (local boutiques, furniture/home stores, department stores, and the big-box/online prices shoppers there would see). Give a realistic price range per city and a suggested "compare at" price the store could honestly show. Be conservative; if data is thin, say confidence is low.
 ${COMPARE_SCHEMA_HINT}`;
-    const res = await ask({
+    const res = await askClaude({
       model: MODEL,
       max_tokens: 16000,
       thinking: { type: "adaptive" },

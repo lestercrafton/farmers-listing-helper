@@ -10,29 +10,31 @@ import { summarizeCompare } from "./pricing.js";
 
 const MODEL = "claude-opus-5";
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
-const MAX_SEARCHES = 6;
+const MAX_SEARCHES = 8;
 const MAX_CONTINUATIONS = 3;
 
-function client(env) {
+function client(env, { maxRetries = 1 } = {}) {
   if (!env.ANTHROPIC_API_KEY) {
     throw new HttpError(503, "not_configured", "The helper isn't fully set up yet (the AI key is missing).");
   }
   return new Anthropic({
     apiKey: env.ANTHROPIC_API_KEY,
     baseURL: env.ANTHROPIC_BASE_URL || undefined,
-    maxRetries: 1,
-    timeout: 150_000,
+    maxRetries,
+    timeout: 200_000,
   });
 }
 
-// Refusal fallbacks let the API re-run a declined request on another model inside the same
-// call. If the API ever rejects that option, ask again without it.
+// Answers are streamed: a long web-search turn can go quiet for over 100 seconds, and the API's
+// edge closes an idle connection at about that point (HTTP 524). Refusal fallbacks let the API
+// re-run a declined request on another model inside the same call; if the API ever rejects
+// that option, ask again without it.
 async function ask(anthropic, params) {
   try {
-    return await anthropic.beta.messages.create({ ...params, betas: [FALLBACK_BETA], fallbacks: "default" });
+    return await anthropic.beta.messages.stream({ ...params, betas: [FALLBACK_BETA], fallbacks: "default" }).finalMessage();
   } catch (err) {
     if (err instanceof Anthropic.BadRequestError && /fallback|beta/i.test(err.message || "")) {
-      return anthropic.messages.create(params);
+      return anthropic.messages.stream(params).finalMessage();
     }
     throw err;
   }
@@ -59,6 +61,9 @@ function translate(err) {
   }
   if (err instanceof Anthropic.APIError) {
     console.error("anthropic", err.status, err.message);
+    if (err.status === 524 || err.status === 504) {
+      return new HttpError(504, "busy", "That took too long. Please try again.");
+    }
     return new HttpError(503, "busy", "The AI service is having trouble right now. Try again in a minute.");
   }
   return err;
@@ -135,7 +140,7 @@ export async function writeListing(env, { photos, style, notes, price, previous 
 export async function comparePrices(env, { photo, title, description, brand, searchPhrase, notes, price }) {
   const started = Date.now();
   try {
-    const anthropic = client(env);
+    const anthropic = client(env, { maxRetries: 0 });
     const content = [];
     if (photo) content.push(image(photo));
     content.push({ type: "text", text: compareUserText({ title, description, brand, searchPhrase, notes, price }) });

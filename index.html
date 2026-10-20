@@ -491,7 +491,7 @@ function renderCompare() {
 
   if (r.compareState === "running") {
     const sp = document.createElement("div"); sp.className = "spin"; row.prepend(sp);
-    say.textContent = "Checking what this sells for at stores serving Memphis, Nashville and Atlanta. This takes about a minute; you can keep working.";
+    say.textContent = "Checking what this sells for at stores serving Memphis, Nashville and Atlanta. This takes a minute or two; you can copy the listing while you wait.";
     return;
   }
   if (r.compareState === "error") {

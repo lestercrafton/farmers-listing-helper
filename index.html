@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Farmers Listing Helper</title>
+<meta name="description" content="Snap a photo of an item and get a ready-to-post listing with a compare-at price.">
 <meta name="theme-color" content="#2f4a3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Listings">
@@ -13,47 +14,48 @@
 <style>
 :root{
   --bg:#f6f1e7; --card:#fffdf8; --ink:#2a2723; --muted:#6f675c; --line:#e3d9c6;
-  --brand:#2f4a3a; --brand-ink:#f6efe2; --accent:#b5652b; --ok:#2e7d4f; --err:#a3332a;
-  --field:#ffffff;
+  --brand:#2f4a3a; --brand-ink:#f6efe2; --accent:#a4561f; --ok:#2e7d4f; --err:#a3332a;
+  --field:#ffffff; --tint:#eef3ee;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#1b1a17; --card:#25231f; --ink:#f1ebdf; --muted:#b1a795; --line:#3a362f;
-    --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f; --field:#1f1d1a;
+    --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f;
+    --field:#1f1d1a; --tint:#2a302b;
   }
 }
 :root[data-theme="dark"]{
   --bg:#1b1a17; --card:#25231f; --ink:#f1ebdf; --muted:#b1a795; --line:#3a362f;
-  --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f; --field:#1f1d1a;
+  --brand:#6f9a7f; --brand-ink:#12140f; --accent:#e0915a; --ok:#6cc08f; --err:#ec7a6f;
+  --field:#1f1d1a; --tint:#2a302b;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
 header{background:var(--brand);color:var(--brand-ink);padding:18px 16px 16px;padding-top:max(18px,env(safe-area-inset-top))}
-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
 h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:22px;margin:0;line-height:1.15}
 header p{margin:2px 0 0;font-size:13px;opacity:.85}
 .wrap{max-width:640px;margin:0 auto}
-main{padding:16px;padding-bottom:80px}
+main{padding:16px;padding-bottom:60px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
 .card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
 label{display:block;font-size:14px;font-weight:500;margin:12px 0 6px}
-label:first-child{margin-top:0}
-input[type=text],input[type=password],input[type=number],textarea,select{
+.opt{color:var(--muted);font-weight:400}
+input[type=text],input[type=password],input[type=number],textarea{
   width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--field);
-  border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--brand)}
-textarea{resize:vertical;min-height:44px}
+  border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;margin:0}
+input:focus,textarea:focus{border-color:var(--brand)}
+textarea{resize:none;min-height:44px;display:block;overflow:hidden}
 .row{display:flex;gap:10px}
 .row>*{flex:1;min-width:0}
 .money{position:relative}
 .money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
 .money input{padding-left:24px}
-button{font:inherit;font-weight:600;border-radius:10px;border:1px solid transparent;padding:12px 14px;cursor:pointer;touch-action:manipulation}
+button{font:inherit;font-weight:600;border-radius:10px;border:1px solid transparent;padding:12px 14px;cursor:pointer;touch-action:manipulation;color:var(--ink)}
+button:disabled{opacity:.55;cursor:default}
 .btn-primary{background:var(--brand);color:var(--brand-ink);width:100%;font-size:17px;padding:15px}
-.btn-primary:disabled{opacity:.55}
-.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost{background:transparent;border-color:var(--line)}
 .btn-small{padding:7px 11px;font-size:13px}
-.icon-btn{background:transparent;color:inherit;border:1px solid rgba(255,255,255,.35);padding:8px 10px;font-size:13px}
+.btn-link{background:none;border:0;padding:0;color:var(--brand);font-weight:600;text-decoration:underline;font-size:inherit}
 .drop{border:2px dashed var(--line);border-radius:12px;padding:22px 12px;text-align:center;cursor:pointer;background:var(--field)}
 .drop strong{display:block;font-size:17px}
 .drop small{color:var(--muted)}
@@ -61,7 +63,7 @@ button{font:inherit;font-weight:600;border-radius:10px;border:1px solid transpar
 .thumbs:empty{display:none}
 .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.thumb button{position:absolute;top:4px;right:4px;width:26px;height:26px;padding:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:1}
+.thumb button{position:absolute;top:4px;right:4px;width:28px;height:28px;padding:0;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;font-size:16px;line-height:1}
 .seg{display:flex;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
 .seg button{flex:1;background:transparent;color:var(--muted);padding:9px 6px;font-size:14px;border-radius:8px}
 .seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
@@ -69,80 +71,74 @@ button{font:inherit;font-weight:600;border-radius:10px;border:1px solid transpar
 .out{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:var(--field)}
 .out-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .out-head span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.out-body{white-space:pre-wrap;word-wrap:break-word;font-size:16px}
-.out-body.title{font-weight:600;letter-spacing:.01em}
+.out textarea{border:0;padding:0;border-radius:0;background:transparent}
+.out textarea.title{font-weight:600}
 .copy.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+.priceline{font-size:17px;font-weight:600;margin-top:10px;min-height:1.5em}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400;color:var(--muted);margin:10px 0 0;cursor:pointer}
+.check input{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--brand)}
+.cmp{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--tint);font-size:14px}
+.cmp-row{display:flex;gap:10px;align-items:flex-start}
+.cmp-row .spin{flex:none;margin-top:2px}
+.cmp b{font-weight:600}
+.cmp details{margin-top:8px}
+.cmp summary{cursor:pointer;font-weight:600;color:var(--brand)}
+.comp{padding:8px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.comp:last-of-type{border-bottom:0}
+.comp div{min-width:0}
+.comp .who{font-weight:600}
+.comp small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
+.comp .amt{font-weight:600;white-space:nowrap;text-align:right}
+.comp.unused{opacity:.6}
+.comp a{color:var(--brand)}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .notes{font-size:13px;color:var(--accent);margin-top:10px}
-.compare-list{display:grid;gap:8px;margin-top:10px}
-.city{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding:6px 0}
-.city:last-child{border-bottom:0}
-.city b{font-weight:600}
-.city small{display:block;color:var(--muted);font-size:12px}
 .status{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;margin-top:12px}
-.spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s 0.8s linear infinite}
+.spin{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--brand);border-radius:50%;animation:s .8s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:2.4s}}
 .err{color:var(--err);font-size:14px;margin-top:10px}
+.okmsg{color:var(--ok);font-size:14px;margin-top:10px}
 .hidden{display:none!important}
 details summary{cursor:pointer;font-weight:500}
-.hist{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.hist{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer;width:100%;background:none;border-radius:0;border-left:0;border-right:0;border-top:0;text-align:left;font-weight:400}
 .hist:last-child{border-bottom:0}
 .hist img{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none}
 .hist div{min-width:0}
 .hist b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hist small{color:var(--muted);font-size:12px}
+.sq{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.sq .row{margin-top:8px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30px}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
-    <div>
-      <h1>Farmers Listing Helper</h1>
-      <p>Snap a photo, get a listing, copy &amp; paste.</p>
-    </div>
-    <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙︎ Setup</button>
+    <h1>Farmers Listing Helper</h1>
+    <p>Snap a photo. Get the listing and a compare-at price.</p>
   </div>
 </header>
 
 <main class="wrap">
 
-  <section class="card hidden" id="setupCard">
-    <h2>One-time setup</h2>
-    <label for="apiKey">Anthropic API key</label>
-    <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-    <p class="hint">Saved only on this phone. It is sent straight to Anthropic and nowhere else.</p>
-    <div class="row" style="margin-top:12px">
-      <button class="btn-primary" id="saveKey" style="font-size:15px;padding:12px">Save</button>
-      <button class="btn-ghost" id="clearKey">Remove key</button>
-    </div>
-  </section>
-
   <section class="card">
-    <h2>1 · Photos</h2>
+    <h2>1 · The item</h2>
     <div class="drop" id="drop" role="button" tabindex="0">
       <strong>📷 Take or choose photos</strong>
-      <small>Up to 4. Tags, labels &amp; the back side help.</small>
+      <small>Up to 4. A shot of the tag or label helps a lot.</small>
     </div>
     <input type="file" id="file" accept="image/*" multiple class="hidden">
     <div class="thumbs" id="thumbs"></div>
 
-    <label for="notes">Anything I should know? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-    <textarea id="notes" rows="2" placeholder="e.g. brand Curds &amp; Whey, sizes S–XL, 24&quot; tall, solid mango wood"></textarea>
+    <label for="notes">Anything I should know? <span class="opt">(optional)</span></label>
+    <textarea id="notes" rows="2" maxlength="600" placeholder="Brand, size, material… e.g. Curds &amp; Whey, sizes S–XL"></textarea>
 
-    <div class="row">
-      <div>
-        <label for="price">Price</label>
-        <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" id="price" placeholder="0.00"></div>
-      </div>
-      <div>
-        <label for="compareAt">Compare @</label>
-        <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" id="compareAt" placeholder="optional"></div>
-      </div>
-    </div>
+    <label for="price">Your price <span class="opt">(optional)</span></label>
+    <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" min="0" id="price" placeholder="0.00"></div>
 
-    <label>Writing style</label>
-    <div class="seg" id="styleSeg">
+    <label id="styleLabel">Writing style</label>
+    <div class="seg" id="styleSeg" role="group" aria-labelledby="styleLabel">
       <button type="button" data-style="classic" aria-pressed="false">Like my site</button>
       <button type="button" data-style="better" aria-pressed="true">A little better</button>
       <button type="button" data-style="warm" aria-pressed="false">Warm &amp; chatty</button>
@@ -151,8 +147,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30p
     <div style="margin-top:16px">
       <button class="btn-primary" id="go">✨ Write my listing</button>
     </div>
-    <div class="status hidden" id="status"><div class="spin"></div><span id="statusText">Looking at your photo…</span></div>
-    <div class="err hidden" id="err"></div>
+    <div class="status hidden" id="status" role="status"><div class="spin"></div><span id="statusText">Looking at your photo…</span></div>
+    <div class="err hidden" id="err" role="alert"></div>
   </section>
 
   <section class="card hidden" id="result">
@@ -160,22 +156,36 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30p
 
     <div class="out">
       <div class="out-head"><span>Item name</span><button class="btn-ghost btn-small copy" data-copy="title">Copy</button></div>
-      <div class="out-body title" id="outTitle"></div>
+      <textarea class="title" id="outTitle" rows="1" aria-label="Item name" autocapitalize="characters"></textarea>
     </div>
 
     <div class="out">
       <div class="out-head"><span>Description</span><button class="btn-ghost btn-small copy" data-copy="description">Copy</button></div>
-      <div class="out-body" id="outDesc"></div>
+      <textarea id="outDesc" rows="3" aria-label="Description"></textarea>
+      <label class="check hidden" id="cmpLineBox"><input type="checkbox" id="cmpLineOn" checked> <span id="cmpLineText"></span></label>
     </div>
 
-    <div class="out" id="priceBox">
+    <div class="out">
       <div class="out-head"><span>Price</span><button class="btn-ghost btn-small copy" data-copy="price">Copy</button></div>
-      <div class="out-body" id="outPrice"></div>
+      <div class="row">
+        <div>
+          <label for="price2" style="margin-top:0">Your price</label>
+          <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" min="0" id="price2" placeholder="0.00"></div>
+        </div>
+        <div>
+          <label for="compareAt" style="margin-top:0">Compare @</label>
+          <div class="money"><span>$</span><input type="number" inputmode="decimal" step="0.01" min="0" id="compareAt" placeholder="finding…"></div>
+        </div>
+      </div>
+      <div class="priceline" id="priceLine"></div>
+      <div class="cmp" id="cmp" aria-live="polite"></div>
+      <p class="hint" id="sqTip">In Square, type only your own price. Leave Square's "sale price" empty: Square shows the higher price crossed out, which tells shoppers it was your old price.</p>
     </div>
 
     <div class="out">
       <div class="out-head"><span>Facebook / Instagram post</span><button class="btn-ghost btn-small copy" data-copy="social">Copy</button></div>
-      <div class="out-body" id="outSocial"></div>
+      <textarea id="outSocial" rows="3" aria-label="Social post"></textarea>
+      <p class="hint" id="socialPrice"></p>
     </div>
 
     <div class="notes hidden" id="outNotes"></div>
@@ -184,25 +194,25 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30p
       <button class="btn-ghost" id="refresh">🔄 New version</button>
       <button class="btn-ghost copy" data-copy="all">📋 Copy all</button>
     </div>
-  </section>
 
-  <section class="card hidden" id="compareCard">
-    <h2>3 · Compare @ — what it runs elsewhere</h2>
-    <p class="hint" style="margin-top:0">Looks up similar items sold in Memphis, Nashville &amp; Atlanta stores and online. Takes about a minute.</p>
-    <button class="btn-ghost" id="compareBtn" style="width:100%;margin-top:10px">🔎 Check prices in Memphis · Nashville · Atlanta</button>
-    <div class="status hidden" id="cStatus"><div class="spin"></div><span>Shopping around…</span></div>
-    <div class="err hidden" id="cErr"></div>
-    <div id="cOut" class="hidden">
-      <div class="compare-list" id="cList"></div>
-      <div class="out" style="margin-top:12px">
-        <div class="out-head"><span>Suggested compare @ price</span><button class="btn-ghost btn-small" id="useCompare">Use it</button></div>
-        <div class="out-body" id="cSuggest"></div>
+    <div class="sq hidden" id="sq">
+      <button class="btn-primary" id="sqSend" style="font-size:15px;padding:12px">Send to my Square store</button>
+      <button class="btn-ghost hidden" id="sqConnect" style="width:100%">Connect my Square store</button>
+      <div class="hidden" id="sqPinBox">
+        <label for="sqPin">Store PIN</label>
+        <div class="row">
+          <input type="password" inputmode="numeric" id="sqPin" autocomplete="off" placeholder="PIN">
+          <button class="btn-ghost" id="sqPinOk" style="flex:none">OK</button>
+        </div>
       </div>
-      <p class="hint" id="cNote"></p>
+      <div class="status hidden" id="sqStatus" role="status"><div class="spin"></div><span>Sending to Square…</span></div>
+      <div class="okmsg hidden" id="sqOk" role="status"></div>
+      <div class="err hidden" id="sqErr" role="alert"></div>
+      <p class="hint" id="sqHint"></p>
     </div>
   </section>
 
-  <section class="card" id="histCard">
+  <section class="card hidden" id="histCard">
     <details>
       <summary>Recent listings</summary>
       <div id="hist" style="margin-top:8px"></div>
@@ -211,300 +221,420 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:10px 16px 30p
 </main>
 <footer>Made for Farmers Hardware &amp; Home Furnishings · Somerville, TN</footer>
 
-<script type="module">
-import Anthropic from "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk/+esm";
+<script>
+"use strict";
+// Where the helper's server lives. For local development, open the page with
+// ?api=http://localhost:8787 (only localhost is accepted, so a shared link can't redirect photos).
+const API = (() => {
+  const prod = "https://farmers-listing-helper.sitetime.workers.dev";
+  try {
+    const o = new URLSearchParams(location.search).get("api");
+    if (o && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(o)) return o;
+  } catch {}
+  return prod;
+})();
 
-const MODEL = "claude-opus-5";
+const MAX_PHOTOS = 4;
 const $ = (id) => document.getElementById(id);
+const show = (el, on = true) => el.classList.toggle("hidden", !on);
 const store = {
   get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch {} },
 };
 
 // ---------- state ----------
-let photos = [];          // [{dataUrl, b64, mediaType}]
+let photos = [];            // [{dataUrl, b64}] for the item being worked on
 let style = store.get("style", "better");
-let current = null;       // latest listing result
-let previousVersions = []; // descriptions already shown for this item (for refresh)
+let current = null;         // the listing on screen
+let previousVersions = [];  // descriptions already shown for this item (so "New version" differs)
+let compareRun = 0;         // bumps on every price check so a stale answer is ignored
+let compareTouched = false; // true once she types her own compare-at price
+let config = { square: { available: false, connected: false } };
 
-// ---------- setup ----------
-const hasKey = () => !!store.get("apiKey");
-function showSetup(show) { $("setupCard").classList.toggle("hidden", !show); }
-showSetup(!hasKey());
-$("settingsBtn").onclick = () => showSetup($("setupCard").classList.contains("hidden"));
-$("saveKey").onclick = () => {
-  const k = $("apiKey").value.trim();
-  if (!k) return;
-  store.set("apiKey", k); $("apiKey").value = ""; showSetup(false);
-};
-$("clearKey").onclick = () => { store.del("apiKey"); $("apiKey").value = ""; };
-const client = () => new Anthropic({ apiKey: store.get("apiKey"), dangerouslyAllowBrowser: true });
-// Ask with server-side refusal fallbacks; if the API ever rejects that option, retry plainly.
-async function askClaude(params) {
+// ---------- talking to the server ----------
+async function api(path, { form = null, pin = "", timeoutMs = 60000 } = {}) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
+  let res;
   try {
-    return await client().beta.messages.create({ ...params, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+    res = await fetch(API + path, {
+      method: form ? "POST" : "GET",
+      body: form || undefined,
+      headers: pin ? { "X-Store-Pin": pin } : undefined,
+      signal: ctl.signal,
+    });
   } catch (e) {
-    if (e?.status === 400 && /fallback|beta/i.test(e?.message || "")) return client().messages.create(params);
-    throw e;
+    clearTimeout(timer);
+    throw new Error(e && e.name === "AbortError"
+      ? "That took too long. Please try again."
+      : "Couldn't reach the helper. Check your connection and try again.");
   }
+  let data;
+  try { data = await res.json(); }
+  catch { throw new Error("The helper sent back something unexpected. Please try again."); }
+  finally { clearTimeout(timer); }
+  if (!data || !data.ok) {
+    const err = new Error((data && data.error && data.error.message) || "Something went wrong. Please try again.");
+    err.code = data && data.error && data.error.code;
+    throw err;
+  }
+  return data;
 }
 
 // ---------- style toggle ----------
 document.querySelectorAll("#styleSeg button").forEach((b) => {
-  b.setAttribute("aria-pressed", b.dataset.style === style);
+  b.setAttribute("aria-pressed", String(b.dataset.style === style));
   b.onclick = () => {
     style = b.dataset.style; store.set("style", style);
-    document.querySelectorAll("#styleSeg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    document.querySelectorAll("#styleSeg button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   };
 });
 
 // ---------- photos ----------
 $("drop").onclick = () => $("file").click();
-$("drop").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") $("file").click(); };
+$("drop").onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } };
 $("file").onchange = async (e) => {
-  const files = [...e.target.files].slice(0, 4 - photos.length);
-  for (const f of files) photos.push(await shrink(f));
+  const files = [...e.target.files].slice(0, MAX_PHOTOS - photos.length);
   e.target.value = "";
+  let failed = 0;
+  for (const f of files) {
+    try { photos.push(await shrink(f)); } catch { failed++; }
+  }
   renderThumbs();
+  showError(failed ? "One of those photos couldn't be opened. Try taking it again." : "");
 };
 function renderThumbs() {
   $("thumbs").innerHTML = "";
   photos.forEach((p, i) => {
     const d = document.createElement("div"); d.className = "thumb";
-    d.innerHTML = `<img alt=""><button aria-label="Remove">×</button>`;
-    d.querySelector("img").src = p.dataUrl;
-    d.querySelector("button").onclick = () => { photos.splice(i, 1); renderThumbs(); };
-    $("thumbs").appendChild(d);
+    const img = document.createElement("img"); img.alt = "Photo " + (i + 1); img.src = p.dataUrl;
+    const x = document.createElement("button"); x.type = "button"; x.textContent = "×"; x.setAttribute("aria-label", "Remove photo " + (i + 1));
+    x.onclick = () => { photos.splice(i, 1); renderThumbs(); };
+    d.append(img, x); $("thumbs").appendChild(d);
   });
-  $("drop").classList.toggle("hidden", photos.length >= 4);
+  show($("drop"), photos.length < MAX_PHOTOS);
 }
-// Phone photos are huge; resize to ~1400px JPEG before sending.
+// Phone photos are huge. Shrink to a JPEG that is plenty for reading tags and fabric detail.
 function shrink(file) {
   return new Promise((resolve, reject) => {
+    const src = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      const max = 1400, s = Math.min(1, max / Math.max(img.width, img.height));
-      const c = document.createElement("canvas");
-      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-      const dataUrl = c.toDataURL("image/jpeg", 0.85);
-      URL.revokeObjectURL(img.src);
-      resolve({ dataUrl, b64: dataUrl.split(",")[1], mediaType: "image/jpeg" });
+      try {
+        let dataUrl = "";
+        for (const [max, q] of [[1400, 0.82], [1400, 0.68], [1100, 0.7], [900, 0.6]]) {
+          const s = Math.min(1, max / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+          const g = c.getContext("2d");
+          g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); // transparent PNGs get a white background
+          g.drawImage(img, 0, 0, c.width, c.height);
+          dataUrl = c.toDataURL("image/jpeg", q);
+          if (dataUrl.length < 1250000) break;
+        }
+        const b64 = dataUrl.split(",")[1] || "";
+        if (!b64.startsWith("/9j/")) throw new Error("not a jpeg");
+        resolve({ dataUrl, b64 });
+      } catch (err) { reject(err); }
+      finally { URL.revokeObjectURL(src); }
     };
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => { URL.revokeObjectURL(src); reject(new Error("unreadable image")); };
+    img.src = src;
   });
 }
 
-// ---------- the prompt ----------
-const SYSTEM = `You write product listings for Farmers Hardware and Home Furnishings, a family-owned store on the town square in Somerville, Tennessee (in the family since 1954). They sell home furnishings and custom-order furniture, home decor, seasonal and holiday decor, gifts, gourmet pantry items, a women's clothing boutique, and hardware. Listings go on their Square Online store.
-
-ITEM NAME — match the store's house style exactly: ALL CAPS, short, color first for clothing, store abbreviations where natural. Real examples from the site:
-- OLIVE/BLK POLKA DOT 3/4 SLV BTN FRNT TOP
-- RED HI-RISE VELVETEEN BOOTCUT PINTUCK PANTS
-- HAND-WOVEN SEAGRASS BASKET W/LID - MED
-- BLU/WHT PORCELAIN JAR W/BIRDS & FLOWERS
-- GRAND POD BERRY SPRAY ORANGE 24"
-- MANGO WOOD SERVING BOARD W/ 3 PEDESTALS
-- ROASTED PINEAPPLE HABANERO JELLY
-Common abbreviations: W/ (with), BTN (button), SLV (sleeve), L/S and S/SLV, FRNT (front), EMBRD'D (embroidered), BLK, BLU, WHT, GRN, HI-RISE, MED. Put sizes in inches with " when known. Keep it under ~50 characters. Spell words correctly.
-
-DESCRIPTION — examples of the store's current descriptions:
-- "This hunter green 3/4 sleeve top features a scalloped design that adds a touch of elegance to its versatile style. Crafted for a comfortable fit, it is suitable for both casual and professional settings."
-- "Square pillow featuring a green and rust embroidered leaf motif with intricate beaded accents for added texture and detail. Ideal for enhancing seasonal or nature-inspired décor."
-- "This Roasted Pineapple Habanero Jelly combines a sweet and spicy flavor profile, making it a versatile condiment for a variety of dishes. Handcrafted with quality ingredients, it's ideal for glazing, dipping, or pairing with cheese and crackers."
-
-Rules for every description:
-- Describe only what you can actually see or what the owner told you. Never invent materials, brands, dimensions, care instructions, or features (no "energy-efficient", "durable materials", "easy assembly" unless evident). If something important is unclear (size, material), leave it out and mention it in "check_before_posting".
-- Plain text, no markdown, no emojis, no hashtags, no price in the description.
-- Write in American English for customers in West Tennessee and the Mid-South.
-
-STYLE MODES:
-- "classic": match the examples above closely. 2 sentences, 30–50 words, polished and neutral.
-- "better": same polished voice but noticeably more useful. 3–4 sentences, 50–90 words. Lead with the most distinctive visible detail (exact color, pattern, texture, shape, finish), then how it's worn/used/styled, then one concrete pairing, room, occasion, or gift idea. Avoid filler words: versatile, elevate, timeless, perfect addition, touch of elegance, any occasion. Every sentence should tell the shopper something specific.
-- "warm": friendly small-town boutique voice, like the owner talking to a regular customer. 3–4 sentences, 50–90 words, can use "you" and a light Southern warmth, still no emojis and nothing made up.
-
-SOCIAL POST: 1–3 short, friendly sentences for Facebook/Instagram announcing the item is in store and online, may use 1–2 emojis, end with "Shop in store on the square in Somerville or online!" If a price is given, include it (and the compare-at price as "Compare at $X" if given).
-
-If there are several photos, they show the same item. If the photos show several different products, write the listing for the main or first one and say so in check_before_posting.`;
-
-const LISTING_SCHEMA = {
-  type: "object",
-  additionalProperties: false,
-  required: ["title", "description", "social_post", "category", "search_phrase", "check_before_posting"],
-  properties: {
-    title: { type: "string", description: "Item name in house style" },
-    description: { type: "string" },
-    social_post: { type: "string" },
-    category: { type: "string", description: "e.g. Boutique - Tops, Home Decor, Holiday, Pantry, Furniture, Hardware" },
-    search_phrase: { type: "string", description: "Short generic shopping search for this item type, e.g. 'hand-woven seagrass basket with lid medium'" },
-    check_before_posting: { type: "string", description: "Anything the owner should confirm (size, material, brand). Empty string if nothing." },
-  },
-};
-
-function friendlyError(e) {
-  const s = e?.status;
-  if (s === 401) return "The API key isn't working. Tap ⚙︎ Setup and re-enter it.";
-  if (s === 429) return "Too many requests at once — wait a few seconds and try again.";
-  if (s >= 500 || s === 529) return "The AI service is busy right now. Try again in a minute.";
-  if (e instanceof TypeError || /fetch|network/i.test(e?.message || "")) return "Couldn't reach the internet. Check your connection and try again.";
-  return "Something went wrong: " + (e?.message || e);
+// ---------- price helpers ----------
+const num = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
+const money = (v) => { const n = num(v); return n === null ? "" : "$" + n.toFixed(2); };
+// "Comparable value" must say it is about similar goods (16 CFR 233.2(c)); "Compare at" is
+// for the identical item. A number she types herself is shown as "Compare at".
+function compareLine(r) {
+  const c = money(r.compareAt); if (!c) return "";
+  if (r.compareWording === "Comparable value") {
+    const t = (r.compare && r.compare.item_type) || "items";
+    return `Comparable value ${c}, based on similar ${t} at other retailers.`;
+  }
+  return `Compare at ${c}.`;
+}
+function priceText(r) {
+  const p = money(r.price), c = compareLine(r);
+  return [p, c].filter(Boolean).join(" · ");
+}
+function descriptionText(r) {
+  const c = r.addCompareLine === false ? "" : compareLine(r);
+  return [r.description, c].filter(Boolean).join("\n\n");
 }
 
-async function writeListing() {
-  $("err").classList.add("hidden");
-  if (!hasKey()) { showSetup(true); $("err").textContent = "Add the API key first (one time only)."; $("err").classList.remove("hidden"); return; }
-  if (!photos.length) { $("err").textContent = "Add at least one photo."; $("err").classList.remove("hidden"); return; }
+// ---------- writing the listing ----------
+function showError(msg) { $("err").textContent = msg || ""; show($("err"), !!msg); }
+function setBusy(on, msg) {
+  $("go").disabled = on; $("refresh").disabled = on;
+  show($("status"), on);
+  if (msg) $("statusText").textContent = msg;
+}
 
-  const price = $("price").value, compareAt = $("compareAt").value;
-  let ask = `Style mode: ${style}.`;
-  const notes = $("notes").value.trim();
-  if (notes) ask += `\nOwner's notes about this item (trust these): ${notes}`;
-  if (price) ask += `\nPrice: $${Number(price).toFixed(2)}`;
-  if (compareAt) ask += `\nCompare-at price: $${Number(compareAt).toFixed(2)}`;
-  if (previousVersions.length) ask += `\nThe owner asked for a fresh version. Write a noticeably different description and social post (different opening, different angle) from these earlier ones:\n- ${previousVersions.join("\n- ")}`;
+async function writeListing(isRefresh) {
+  showError("");
+  if (!photos.length) { showError(isRefresh ? "The photos for this one are no longer loaded. Add them again to get a new version." : "Add at least one photo first."); return; }
+  if (!isRefresh) { previousVersions = []; }
 
-  const content = [
-    ...photos.map((p) => ({ type: "image", source: { type: "base64", media_type: p.mediaType, data: p.b64 } })),
-    { type: "text", text: ask },
-  ];
+  const form = new FormData();
+  photos.forEach((p) => form.append("photo", p.b64));
+  form.append("style", style);
+  form.append("notes", $("notes").value.trim());
+  form.append("price", $("price").value);
+  form.append("previous", JSON.stringify(previousVersions.slice(-4)));
 
-  setBusy(true, previousVersions.length ? "Writing a new version…" : "Looking at your photo…");
+  setBusy(true, isRefresh ? "Writing a new version…" : "Looking at your photo…");
   try {
-    const res = await askClaude({
-      model: MODEL,
-      max_tokens: 16000,
-      system: SYSTEM,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "medium", format: { type: "json_schema", schema: LISTING_SCHEMA } },
-      messages: [{ role: "user", content }],
-    });
-    if (res.stop_reason === "refusal") throw new Error("The AI declined to describe this photo. Try a different picture.");
-    const text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("");
-    const data = JSON.parse(text);
-    current = { ...data, price, compareAt, thumb: await tinyThumb(photos[0].dataUrl), at: Date.now() };
-    previousVersions.push(data.description);
-    renderResult();
-    saveHistory(current);
+    const { listing } = await api("/api/listing", { form, timeoutMs: 120000 });
+    previousVersions.push(listing.description);
+    if (isRefresh && current) {
+      // Same item: keep the price work, swap the words.
+      Object.assign(current, listing);
+    } else {
+      compareTouched = false;
+      current = {
+        id: Date.now(), at: Date.now(), ...listing,
+        notes: $("notes").value.trim(),
+        price: $("price").value, compareAt: "", compareWording: "",
+        compare: null, compareState: "idle", compareError: "",
+        thumb: await tinyThumb(photos[0].dataUrl), square: null,
+      };
+    }
+    renderResult(true);
+    saveHistory();
+    if (!isRefresh) runCompare();
   } catch (e) {
-    $("err").textContent = friendlyError(e);
-    $("err").classList.remove("hidden");
+    showError(e.message);
   } finally {
     setBusy(false);
   }
 }
+$("go").onclick = () => writeListing(false);
+$("refresh").onclick = () => writeListing(true);
 
-function setBusy(on, msg) {
-  $("go").disabled = on; $("refresh").disabled = on;
-  $("status").classList.toggle("hidden", !on);
-  if (msg) $("statusText").textContent = msg;
-}
-
-const money = (v) => (v ? "$" + Number(v).toFixed(2) : "");
-function priceLine(r) {
-  if (!r.price && !r.compareAt) return "";
-  return [r.price && money(r.price), r.compareAt && `Compare @ ${money(r.compareAt)}`].filter(Boolean).join("   ·   ");
-}
-
-function renderResult() {
-  const r = current;
-  $("outTitle").textContent = r.title;
-  $("outDesc").textContent = r.description;
-  $("outSocial").textContent = r.social_post;
-  $("outPrice").textContent = priceLine(r);
-  $("priceBox").classList.toggle("hidden", !priceLine(r));
+// ---------- showing the listing ----------
+function grow(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+function renderResult(scroll) {
+  const r = current; if (!r) return;
+  $("outTitle").value = r.title; $("outDesc").value = r.description; $("outSocial").value = r.social_post;
+  $("price2").value = r.price || ""; $("compareAt").value = r.compareAt || "";
   $("outNotes").textContent = r.check_before_posting ? "⚠︎ Double-check: " + r.check_before_posting : "";
-  $("outNotes").classList.toggle("hidden", !r.check_before_posting);
-  $("result").classList.remove("hidden");
-  $("compareCard").classList.remove("hidden");
-  $("cOut").classList.add("hidden"); $("cErr").classList.add("hidden");
-  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+  show($("outNotes"), !!r.check_before_posting);
+  show($("result"));
+  ["outTitle", "outDesc", "outSocial"].forEach((id) => grow($(id)));
+  renderPrice(); renderCompare(); renderSquare();
+  if (scroll) $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderPrice() {
+  const r = current; if (!r) return;
+  $("priceLine").textContent = [money(r.price), money(r.compareAt) && `${r.compareWording || "Compare at"} ${money(r.compareAt)}`].filter(Boolean).join("  ·  ");
+  const line = compareLine(r);
+  $("cmpLineText").textContent = line ? `Add to the end of the description: “${line}”` : "";
+  $("cmpLineOn").checked = r.addCompareLine !== false;
+  show($("cmpLineBox"), !!line);
+  const t = priceText(r);
+  $("socialPrice").textContent = t ? "“Copy” adds the price line: " + t : "";
+}
+[["outTitle", "title"], ["outDesc", "description"], ["outSocial", "social_post"]].forEach(([id, key]) => {
+  $(id).addEventListener("input", () => { if (current) { current[key] = $(id).value; grow($(id)); saveHistory(); } });
+});
+// The price can be typed in either place; keep them in step.
+$("price").addEventListener("input", () => { if (current) { current.price = $("price").value; $("price2").value = current.price; renderPrice(); renderCompare(); saveHistory(); } });
+$("price2").addEventListener("input", () => { if (current) { current.price = $("price2").value; $("price").value = current.price; renderPrice(); renderCompare(); saveHistory(); } });
+$("cmpLineOn").addEventListener("change", () => { if (current) { current.addCompareLine = $("cmpLineOn").checked; saveHistory(); } });
+$("compareAt").addEventListener("input", () => {
+  if (!current) return;
+  compareTouched = $("compareAt").value !== "";
+  current.compareAt = $("compareAt").value; current.compareWording = "";
+  renderPrice(); renderCompare(); saveHistory();
+});
+
+// ---------- compare-at price (found automatically) ----------
+async function runCompare() {
+  const r = current; if (!r) return;
+  const run = ++compareRun;
+  r.compareState = "running"; r.compareError = ""; renderCompare();
+  const form = new FormData();
+  if (photos[0]) form.append("photo", photos[0].b64);
+  form.append("title", r.title); form.append("description", r.description);
+  form.append("brand", r.brand || ""); form.append("search_phrase", r.search_phrase || "");
+  form.append("notes", r.notes || ""); form.append("price", r.price || "");
+  try {
+    const { compare } = await api("/api/compare", { form, timeoutMs: 240000 });
+    if (run !== compareRun || current !== r) return;
+    r.compare = compare; r.compareState = "done";
+    if (compare.suggested && !compareTouched) applySuggestion(r);
+  } catch (e) {
+    if (run !== compareRun || current !== r) return;
+    r.compareState = "error"; r.compareError = e.message;
+  }
+  renderPrice(); renderCompare(); saveHistory();
+}
+function applySuggestion(r) {
+  r.compareAt = Number(r.compare.suggested).toFixed(2);
+  r.compareWording = r.compare.wording || "Compare at";
+  $("compareAt").value = r.compareAt; compareTouched = false;
+}
+function suggestionStillFits(r) {
+  // A compare-at price at or under her own price would be backwards.
+  const p = num(r.price); return !(p && r.compare && r.compare.suggested && r.compare.suggested <= p);
+}
+function renderCompare() {
+  const r = current, box = $("cmp"); if (!r) return;
+  box.textContent = "";
+  $("compareAt").placeholder = r.compareState === "running" ? "finding…" : "optional";
+  const row = document.createElement("div"); row.className = "cmp-row"; box.appendChild(row);
+  const say = document.createElement("div"); row.appendChild(say);
+
+  if (r.compareState === "running") {
+    const sp = document.createElement("div"); sp.className = "spin"; row.prepend(sp);
+    say.textContent = "Checking what this sells for at stores serving Memphis, Nashville and Atlanta. This takes about a minute; you can keep working.";
+    return;
+  }
+  if (r.compareState === "error") {
+    say.append(r.compareError + " ");
+    const b = document.createElement("button"); b.className = "btn-link"; b.textContent = "Try the price check again"; b.onclick = runCompare;
+    say.append(b); return;
+  }
+  const c = r.compare;
+  if (!c) {
+    const b = document.createElement("button"); b.className = "btn-link"; b.textContent = "Find a compare-at price for me"; b.onclick = runCompare;
+    say.append(b);
+    return;
+  }
+
+  const used = c.comps.filter((x) => x.used);
+  if (c.suggested) {
+    const b = document.createElement("b");
+    b.textContent = `${c.wording} $${Number(c.suggested).toFixed(2)}`;
+    say.append(b);
+    const lo = Number(c.low), hi = Number(c.high), stores = c.stores || used.length;
+    const range = lo === hi ? `$${lo.toFixed(2)}` : `$${lo.toFixed(2)} to $${hi.toFixed(2)}`;
+    const what = c.basis === "same" ? "this exact item" : `similar ${c.item_type || "items"}`;
+    say.append(` Based on ${stores} stores selling ${what} for ${range}; at least half charge this or more. Confidence: ${c.confidence}.`);
+    const mine = num(r.compareAt);
+    if (!suggestionStillFits(r)) {
+      say.append(" Your price is at or above that, so leave Compare @ blank.");
+    } else if (mine !== c.suggested || (r.compareWording || "") !== c.wording) {
+      say.append(" ");
+      const u = document.createElement("button"); u.className = "btn-link"; u.textContent = "Use this";
+      u.onclick = () => { applySuggestion(r); renderPrice(); renderCompare(); saveHistory(); };
+      say.append(u);
+    }
+  } else {
+    say.textContent = c.reason || "No compare-at price to suggest for this one.";
+  }
+  if (c.note) { const n = document.createElement("div"); n.className = "hint"; n.textContent = c.note; box.appendChild(n); }
+
+  if (c.comps.length) {
+    const d = document.createElement("details");
+    const s = document.createElement("summary"); s.textContent = `See the ${c.comps.length} price${c.comps.length === 1 ? "" : "s"} I found`; d.appendChild(s);
+    for (const x of c.comps) {
+      const el = document.createElement("div"); el.className = "comp" + (x.used ? "" : " unused");
+      const left = document.createElement("div");
+      const who = document.createElement("span"); who.className = "who"; who.textContent = x.retailer; left.appendChild(who);
+      const sm = document.createElement("small");
+      const tags = [x.match === "same" ? "same item" : "similar", x.market === "National" ? "national / online" : x.market];
+      if (x.price_type === "sale") tags.push("sale price");
+      if (!x.used) tags.push(x.verified ? "not counted" : "couldn't confirm, not counted");
+      sm.textContent = `${x.item} · ${tags.join(" · ")} `;
+      if (x.url && /^https?:\/\//i.test(x.url)) {
+        const a = document.createElement("a"); a.href = x.url; a.target = "_blank"; a.rel = "noopener noreferrer nofollow"; a.textContent = "view";
+        sm.appendChild(a);
+      }
+      left.appendChild(sm);
+      const amt = document.createElement("div"); amt.className = "amt"; amt.textContent = "$" + Number(x.price).toFixed(2);
+      el.append(left, amt); d.appendChild(el);
+    }
+    const foot = document.createElement("p"); foot.className = "hint";
+    foot.textContent = `Prices found online${c.checked_on ? " on " + c.checked_on : ""}. Open a link or two to make sure they match your item before you advertise the comparison.`;
+    d.appendChild(foot);
+    box.appendChild(d);
+  }
 }
 
 // ---------- copy ----------
+function copyText(key) {
+  const r = current; if (!r) return "";
+  const price = priceText(r);
+  if (key === "title") return r.title;
+  if (key === "description") return descriptionText(r);
+  if (key === "price") return price;
+  if (key === "social") return [r.social_post, price].filter(Boolean).join("\n");
+  return [r.title, descriptionText(r), money(r.price)].filter(Boolean).join("\n\n");
+}
 document.addEventListener("click", async (e) => {
   const b = e.target.closest(".copy"); if (!b || !current) return;
-  const r = current;
-  const map = {
-    title: r.title, description: r.description, social: r.social_post, price: r.price ? Number(r.price).toFixed(2) : priceLine(r),
-    all: [r.title, "", r.description, priceLine(r) && "\n" + priceLine(r)].filter((x) => x !== false && x !== undefined).join("\n").trim(),
-  };
-  const txt = map[b.dataset.copy] || "";
+  const txt = copyText(b.dataset.copy);
+  let ok = true;
   try { await navigator.clipboard.writeText(txt); }
-  catch { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
-  const old = b.textContent; b.textContent = "✓ Copied"; b.classList.add("done");
+  catch {
+    const t = document.createElement("textarea"); t.value = txt; t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.appendChild(t); t.select();
+    try { ok = document.execCommand("copy"); } catch { ok = false; }
+    t.remove();
+  }
+  const old = b.dataset.label || b.textContent; b.dataset.label = old;
+  b.textContent = ok ? "✓ Copied" : "Couldn't copy"; b.classList.toggle("done", ok);
   setTimeout(() => { b.textContent = old; b.classList.remove("done"); }, 1400);
 });
 
-$("go").onclick = () => { previousVersions = []; writeListing(); };
-$("refresh").onclick = () => writeListing();
-
-// ---------- compare @ prices ----------
-const COMPARE_SCHEMA_HINT = `Respond with ONLY a JSON object, no other text, in this shape:
-{"cities":[{"city":"Memphis","low":0,"high":0,"where":"short note on the kinds of stores / sources"},{"city":"Nashville",...},{"city":"Atlanta",...}],
- "online_typical": 0, "suggested_compare_at": 0, "confidence": "low|medium|high", "note": "one sentence explaining the suggestion"}`;
-
-$("compareBtn").onclick = async () => {
-  if (!current) return;
-  $("cErr").classList.add("hidden"); $("cOut").classList.add("hidden");
-  $("compareBtn").disabled = true; $("cStatus").classList.remove("hidden");
-  try {
-    const prompt = `A small-town store in Somerville, TN sells this item: "${current.title}" — ${current.description}
-Generic search phrase: ${current.search_phrase}.${current.price ? ` Their price: $${Number(current.price).toFixed(2)}.` : ""}
-Search the web for what the same or very similar items sell for at retailers in or serving Memphis TN, Nashville TN and Atlanta GA (local boutiques, furniture/home stores, department stores, and the big-box/online prices shoppers there would see). Give a realistic price range per city and a suggested "compare at" price the store could honestly show. Be conservative; if data is thin, say confidence is low.
-${COMPARE_SCHEMA_HINT}`;
-    const res = await askClaude({
-      model: MODEL,
-      max_tokens: 16000,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "low" },
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 6 }],
-      messages: [{ role: "user", content: [
-        { type: "image", source: { type: "base64", media_type: photos[0]?.mediaType || "image/jpeg", data: photos[0]?.b64 || "" } },
-        { type: "text", text: prompt },
-      ].filter((b) => b.type !== "image" || b.source.data) }],
-    });
-    if (res.stop_reason === "refusal") throw new Error("Couldn't look up prices for this one.");
-    const text = res.content.filter((b) => b.type === "text").map((b) => b.text).join("");
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) throw new Error("Couldn't find good price comparisons. Try again.");
-    const d = JSON.parse(m[0]);
-    $("cList").innerHTML = "";
-    for (const c of d.cities || []) {
-      const row = document.createElement("div"); row.className = "city";
-      const range = c.low && c.high ? (c.low === c.high ? money(c.low) : `${money(c.low)} – ${money(c.high)}`) : "—";
-      row.innerHTML = `<div><b></b><small></small></div><b></b>`;
-      row.children[0].children[0].textContent = c.city;
-      row.children[0].children[1].textContent = c.where || "";
-      row.children[1].textContent = range;
-      $("cList").appendChild(row);
-    }
-    if (d.online_typical) {
-      const row = document.createElement("div"); row.className = "city";
-      row.innerHTML = `<div><b>Online (typical)</b></div><b></b>`;
-      row.children[1].textContent = money(d.online_typical);
-      $("cList").appendChild(row);
-    }
-    $("cSuggest").textContent = d.suggested_compare_at ? money(d.suggested_compare_at) : "Not enough data";
-    $("useCompare").classList.toggle("hidden", !d.suggested_compare_at);
-    $("useCompare").onclick = () => {
-      $("compareAt").value = Number(d.suggested_compare_at).toFixed(2);
-      current.compareAt = $("compareAt").value;
-      $("outPrice").textContent = priceLine(current);
-      $("priceBox").classList.remove("hidden");
-    };
-    $("cNote").textContent = [d.note, d.confidence && `Confidence: ${d.confidence}.`].filter(Boolean).join(" ");
-    $("cOut").classList.remove("hidden");
-  } catch (e) {
-    $("cErr").textContent = e?.status ? friendlyError(e) : (e?.message || friendlyError(e));
-    $("cErr").classList.remove("hidden");
-  } finally {
-    $("compareBtn").disabled = false; $("cStatus").classList.add("hidden");
-  }
+// ---------- Square (only shown once the store is set up on the server) ----------
+const pin = { get: () => store.get("storePin", ""), set: (v) => store.set("storePin", v), clear: () => store.del("storePin") };
+let pinThen = null; // what to do once a PIN is entered
+function sqMsg(ok, err) { $("sqOk").textContent = ok || ""; show($("sqOk"), !!ok); $("sqErr").textContent = err || ""; show($("sqErr"), !!err); }
+function renderSquare() {
+  const sq = config.square || {};
+  show($("sq"), !!sq.available && !!current);
+  if (!sq.available || !current) return;
+  show($("sqSend"), !!sq.connected); show($("sqConnect"), !sq.connected);
+  const sent = current.square;
+  $("sqSend").textContent = sent ? "Sent to Square ✓ (send again)" : "Send to my Square store";
+  $("sqHint").textContent = sq.connected
+    ? `Connected to ${sq.merchant || "your Square account"}. It is added to your item library as a new item for you to review; it does not replace anything.`
+    : "Connect once and finished listings go straight into your Square item library.";
+}
+function needPin(then) { pinThen = then; show($("sqPinBox")); $("sqPin").focus(); }
+$("sqPinOk").onclick = () => {
+  const v = $("sqPin").value.trim(); if (!v) return;
+  pin.set(v); $("sqPin").value = ""; show($("sqPinBox"), false);
+  const f = pinThen; pinThen = null; if (f) f();
 };
+$("sqPin").addEventListener("keydown", (e) => { if (e.key === "Enter") $("sqPinOk").click(); });
+async function withPin(action) {
+  if (!pin.get()) { needPin(() => withPin(action)); return; }
+  sqMsg("", "");
+  try { await action(pin.get()); }
+  catch (e) {
+    if (e.code === "bad_pin") { pin.clear(); sqMsg("", "That PIN didn't match. Try again."); needPin(() => withPin(action)); }
+    else sqMsg("", e.message);
+  }
+}
+$("sqConnect").onclick = () => withPin(async (p) => {
+  const { url } = await api("/api/square/connect", { form: new FormData(), pin: p });
+  location.href = url;
+});
+$("sqSend").onclick = () => withPin(async (p) => {
+  const r = current; if (!r) return;
+  if (!num(r.price)) { sqMsg("", "Add your price first."); return; }
+  const form = new FormData();
+  form.append("id", String(r.id)); form.append("title", r.title); form.append("description", descriptionText(r));
+  form.append("price", r.price); form.append("category", r.category || "");
+  photos.forEach((ph) => form.append("photo", ph.b64));
+  $("sqSend").disabled = true; show($("sqStatus"));
+  try {
+    const res = await api("/api/square/item", { form, pin: p, timeoutMs: 90000 });
+    r.square = { item_id: res.item_id, at: Date.now() }; saveHistory(); renderSquare();
+    const bits = ["Added to Square."];
+    if (res.photos_added < photos.length) bits.push(photos.length ? "Some photos didn't upload; add them in Square." : "No photo was sent; add one in Square.");
+    sqMsg(bits.join(" "), "");
+  } finally { $("sqSend").disabled = false; show($("sqStatus"), false); }
+});
 
-// ---------- history (on this phone only) ----------
+// ---------- recent listings (kept on this phone only) ----------
 function tinyThumb(dataUrl) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -514,28 +644,61 @@ function tinyThumb(dataUrl) {
       c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 96, 96);
       resolve(c.toDataURL("image/jpeg", 0.7));
     };
+    img.onerror = () => resolve("");
     img.src = dataUrl;
   });
 }
-function saveHistory(item) {
-  const h = store.get("history", []);
-  h.unshift(item); store.set("history", h.slice(0, 25)); renderHistory();
+function saveHistory() {
+  if (!current) return;
+  const h = store.get("history", []).filter((x) => x && x.id !== current.id);
+  const copy = { ...current };
+  if (copy.compareState === "running") copy.compareState = "idle";
+  h.unshift(copy);
+  if (!store.set("history", h.slice(0, 25))) store.set("history", h.slice(0, 8));
+  renderHistory();
 }
 function renderHistory() {
-  const h = store.get("history", []);
-  $("histCard").classList.toggle("hidden", !h.length);
+  const h = store.get("history", []).filter((x) => x && x.title);
+  show($("histCard"), h.length > 0);
   $("hist").innerHTML = "";
   h.forEach((it) => {
-    const row = document.createElement("div"); row.className = "hist";
-    row.innerHTML = `<img alt=""><div><b></b><small></small></div>`;
-    row.querySelector("img").src = it.thumb;
-    row.querySelector("b").textContent = it.title;
-    row.querySelector("small").textContent = new Date(it.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-    row.onclick = () => { current = it; renderResult(); $("compareCard").classList.add("hidden"); };
+    const row = document.createElement("button"); row.type = "button"; row.className = "hist";
+    const img = document.createElement("img"); img.alt = ""; if (it.thumb) img.src = it.thumb;
+    const d = document.createElement("div");
+    const b = document.createElement("b"); b.textContent = it.title;
+    const sm = document.createElement("small");
+    sm.textContent = [new Date(it.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }), priceText(it)].filter(Boolean).join(" · ");
+    d.append(b, sm); row.append(img, d);
+    row.onclick = () => openHistory(it);
     $("hist").appendChild(row);
   });
 }
+function openHistory(it) {
+  if (current && current.id === it.id) { renderResult(true); return; }
+  compareRun++; // drop any price check still running for the previous item
+  current = { compare: null, compareState: "idle", compareError: "", compareWording: "", ...it };
+  if (current.compareState === "running") current.compareState = "idle";
+  photos = []; previousVersions = [current.description]; renderThumbs();
+  compareTouched = !!current.compareAt && !(current.compare && Number(current.compareAt) === current.compare.suggested);
+  $("notes").value = current.notes || ""; $("price").value = current.price || "";
+  sqMsg("", ""); showError("");
+  renderResult(true);
+}
+
+// ---------- start-up ----------
 renderHistory();
+api("/api/config").then((c) => { config = c; renderSquare(); }).catch(() => {});
+(() => {
+  // Coming back from the Square sign-in page.
+  const m = location.hash.match(/^#square=(connected|error)(?:&why=([^&]*))?/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  const last = store.get("history", [])[0];
+  if (last) openHistory(last);
+  if (m[1] === "connected") sqMsg("Square is connected. Add your photos again if you want them sent with the listing.", "");
+  else sqMsg("", "Square didn't connect" + (m[2] ? ": " + decodeURIComponent(m[2]).replace(/[^\w .,'-]/g, " ").slice(0, 120) : ".") + " Try again.");
+})();
+window.addEventListener("resize", () => ["outTitle", "outDesc", "outSocial"].forEach((id) => current && grow($(id))));
 </script>
 </body>
 </html>

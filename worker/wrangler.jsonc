@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "farmers-listing-helper",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": true },
+
+  // Daily request counter, and (once Square is connected) the store's Square sign-in.
+  "kv_namespaces": [{ "binding": "KV", "id": "6802abc57ba64b20af0afe63cdb4ab9c" }],
+
+  // Per-visitor burst limits. AI calls: 12 a minute. PIN-protected Square calls: 6 a minute.
+  "ratelimits": [
+    { "name": "RATE_LIMITER", "namespace_id": "4101", "simple": { "limit": 12, "period": 60 } },
+    { "name": "PIN_LIMITER", "namespace_id": "4102", "simple": { "limit": 6, "period": 60 } }
+  ],
+
+  "vars": {
+    // The page that is allowed to call this API, and where Square sign-in returns to.
+    "ALLOWED_ORIGINS": "https://lestercrafton.github.io",
+    "APP_URL": "https://lestercrafton.github.io/farmers-listing-helper/",
+    // AI calls allowed per day across everyone using the link.
+    "DAILY_LIMIT": "300",
+    "SQUARE_ENV": "production"
+  }
+
+  // Secrets (set with `wrangler secret put NAME`, never committed):
+  //   ANTHROPIC_API_KEY   required
+  //   STORE_PIN           required for Square: the PIN the owner types before connecting or sending
+  //   SQUARE_APP_ID       required for Square: the Square application's ID
+  //   SQUARE_APP_SECRET   required for Square: the Square application's secret
+}
